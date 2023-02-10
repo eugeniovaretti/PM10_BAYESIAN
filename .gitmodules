@@ -1,0 +1,3 @@
+[submodule "bayesmix"]
+	path = bayesmix
+	url = https://github.com/eugeniovaretti/bayesmix
