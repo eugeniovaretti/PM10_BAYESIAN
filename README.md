@@ -1,7 +1,7 @@
 # PM10_BAYESIAN
 This projects contain (almost) all the work done for the Bayesian Project a.y 2022/2023
 
-The repository contains submodules, so to check it out properly you have to type
+The repository contains as module the bayesmix library, so to check it out properly you have to type
 
 ```
 git clone --recursive https://github.com/eugeniovaretti/PM10_BAYESIAN
