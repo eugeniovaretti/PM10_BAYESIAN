@@ -1,5 +1,7 @@
 read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emilia.csv")
 {
+  n_giorni = 365
+  if(anno=="2016"){n_giorni = 366}
   PM10_Emilia = read.csv(data_name)
   PM10_Emilia = na.omit(PM10_Emilia)
   
@@ -20,7 +22,6 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   dati_anni = cbind(dati_anni,anno_vett)
   colnames(dati_anni)=c("numero", "giorno","settimana","anno")
   dati_anno = dati_anni[which(dati_anni$anno==anno),]
-  n_giorni = nrow(dati_anno)
   
   # costruisco una matrice 365 x numero_località in cui inserisco i valori di una variabile a piacimento (misurazioni PM10), aggiungo gli opportuni Na
   dati_completi = matrix(NA, nrow = n_giorni, ncol = p)
@@ -32,9 +33,9 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   {
     k = 1
     n = nrow(data_split[[i]])
-    for(j in 1:365)
+    for(j in 1:n_giorni)
     {
-      if(data_split[[i]][k,"Wday"] == dati_anni[j,"giorno"] & k<=n)
+      if(data_split[[i]][k,"Wday"] == dati_anno[j,"giorno"] & k<=n)
       {
         dati_completi[j,i] = data_split[[i]][k,variabile]
         k=k+1
@@ -50,7 +51,7 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   {
     for(j in 1:52)
     {
-      dati = dati_completi[which(dati_anni$settimana == j),i]
+      dati = dati_completi[which(dati_anno$settimana == j),i]
       dati_completi_set[j,i] = mean(dati,na.rm = TRUE)
       if(is.nan(dati_completi_set[j,i])){dati_completi_set[j,i]=NA}
     }
@@ -87,18 +88,10 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
     j=j+1
   }
   
-  # tolgo la media da ogni osservazione
-  medie = colMeans(dati_completi_set)
-  dati_completi_set_no_mean = dati_completi_set
-  for (i in 1:p) {
-    dati_completi_set_no_mean[,i] = dati_completi_set[,i] - medie[i]
-  }
-  
   list(località = località,
        area_località = area_località,
        tipo_località = tipo_località,
-       time_series_sett = t(dati_completi_set),
-       time_series_sett_senza_media = t(dati_completi_set_no_mean))
+       time_series_sett = dati_completi_set)
   
   #write.csv(t(dati_completi_set), row.names = FALSE, col.names = FALSE, file = paste('ts_emilia_', anno, '.csv', sep=""))
   #write.csv(t(dati_completi_set),  file = paste('ts_emilia_', anno, '_con_nomi.csv', sep=""))

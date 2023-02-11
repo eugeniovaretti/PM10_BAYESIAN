@@ -16,53 +16,270 @@ knitr::opts_chunk$set(echo = T, # mostra o meno il codice
                       attr.source = ".numberLines")
 ```
 
+# Data cleaning
 
+This section describes the procedure used to clean the data relating to the Emilia Romagna and Lombardy regions. This data will be used by the mcmc algorithm.
 
-```{r}
+## Emilia Romagna
 
-```
+### Quick way
+
+The whole procedure can be done quickly with the following lines of code. (This way one can go directly to the next section "Lombardy"):
 
 ```{r}
 source("utils/read_ts_from_emilia.R")
-# Anni selezionabili: da 2014 a 2019
+
+# choose a year from 2014 to 2019
 anno = "2018"
+
+n_giorni = 365
+if(anno=="2016"){n_giorni = 366}
+
 ob1 = read_ts_from_emilia(anno = anno)
-names(ob1)
+località_e = ob1$località
+area_località_e = ob1$area_località
+tipo_località_e = ob1$tipo_località
+dati_completi_set_e = t(ob1$time_series_sett)
 ```
 
+### Datailed procedure
 
+```{r}
+# choose a year from 2014 to 2019
+anno = "2018"
+n_giorni = 365
+if(anno=="2016"){n_giorni = 366}
+PM10_Emilia = read.csv("input_data/PM10_Emilia.csv")
+```
+
+```{r}
+# missing data:
+#sum(is.na.data.frame(PM10_Emilia))
+library(visdat)
+vis_dat(PM10_Emilia, warn_large_data = FALSE)
+```
+
+```{r}
+# remove rows without location
+head(PM10_Emilia[which(is.na(PM10_Emilia[,"NomeStazione"])),])
+PM10_Emilia = na.omit(PM10_Emilia)
+```
+
+```{r}
+# split data based on locations
+località_e = unique(PM10_Emilia[,"NomeStazione"])
+p_e = length(località_e)
+
+data_e = PM10_Emilia[which(PM10_Emilia[,"Anno"]== anno),]
+
+
+data_split_e = vector(mode = "list", length = p_e)
+for(i in 1:p_e)
+{
+  data_split_e[[i]] = data_e[which(data_e[,"NomeStazione"]==località_e[i]), ]
+}
+```
+
+```{r}
+# in many locations there are not 365/366 observations
+numero_dati_e = nrow(data_split_e[[1]])
+for(i in 2:p_e)
+  numero_dati_e = c(numero_dati_e, nrow(data_split_e[[i]]))
+plot(numero_dati_e,pch=19,xlab = "Locations", ylab="Number of data in a year", ylim = c(0,370))
+abline(h=n_giorni,col = "red", lty = 2, lwd = 3)
+```
+
+```{r}
+# insert NA where there are hidden missing data
+# import info about years
+dati_anni = read.delim2("input_data/dati_anni.txt", header=FALSE)
+dati_anni = dati_anni[-c(2,5,6)]
+anno_vett = c(rep("2014",365),rep("2015",365),rep("2016",366),rep("2017",365),rep("2018",365),rep("2019",365))
+dati_anni = cbind(dati_anni,anno_vett)
+colnames(dati_anni)=c("numero", "giorno","settimana","anno")
+dati_anno = dati_anni[which(dati_anni$anno==anno),]
+```
+
+```{r}
+# build a matrix 
+dati_completi_e = matrix(NA, nrow = n_giorni, ncol = p_e)
+colnames(dati_completi_e) = località_e
+
+variabile = "Valore"
+
+for(i in 1:p_e) # scorre le colonne della matrice
+{
+  k = 1
+  n = nrow(data_split_e[[i]])
+  for(j in 1:n_giorni)
+  {
+    if(data_split_e[[i]][k,"Wday"] == dati_anno[j,"giorno"] & k<=n)
+    {
+      dati_completi_e[j,i] = data_split_e[[i]][k,variabile]
+      k=k+1
+    }
+  }
+}
+```
+
+```{r}
+# view NA's places
+vis_miss(data.frame(dati_completi_e))
+```
+
+```{r}
+# mean by weeks
+dati_completi_set_e = matrix(NA, nrow = 52, ncol = p_e)
+colnames(dati_completi_set_e) = località_e
+
+for(i in 1:p_e)
+{
+  for(j in 1:52)
+  {
+    dati = dati_completi_e[which(dati_anno$settimana == j),i]
+    dati_completi_set_e[j,i] = mean(dati,na.rm = TRUE)
+    if(is.nan(dati_completi_set_e[j,i])){dati_completi_set_e[j,i]=NA}
+
+  }
+}
+
+vis_miss(data.frame(dati_completi_set_e))
+```
+
+```{r}
+# deal with na: remove columns with more than 10% of NA. If there are few NA impute missing data using interpolation.
+source("utils/ts_imputation.R")
+index = 0
+for(i in 1:p_e)
+{
+  ts = dati_completi_set_e[,i]
+  n_na = sum(is.na(ts))
+  if(n_na > 0.05*52){
+    index = c(index,i)
+  } else if(n_na>0){
+    dati_completi_set_e[,i] = ts_imputation(ts)
+  }
+}
+index = index[-1]
+indici = 1:p_e
+indici = indici[-index]
+dati_completi_set_e = dati_completi_set_e[,indici]
+p_e = ncol(dati_completi_set_e)
+località_e = località_e[indici]
+```
+
+```{r}
+vis_miss(data.frame(dati_completi_set_e))
+```
+
+```{r}
+# labels related to locations
+area_località_e = rep("",length(indici))
+tipo_località_e = rep("",length(indici))
+j=1
+for (i in indici)
+{
+  area_località_e[j] = unique(data_split_e[[i]][,"Area"])
+  tipo_località_e[j] = unique(data_split_e[[i]][,"Tipo"])
+  j=j+1
+}
+```
+
+## Lombardy
+
+The Lombardy data are already clean, they are only prepared for the mcmc algorithm.
+
+```{r}
+source("utils/read_ts_from_lombardia.R")
+ob2 =read_ts_from_lombardia()
+località_l = ob2$località
+area_località_l = ob2$area_località
+tipo_località_l = ob2$tipo_località
+dati_completi_set_l = ob2$time_series_sett
+```
+
+# Data plot
+
+```{r}
+# merging data from the two regions
+ts_e = dati_completi_set_e
+ts_l = dati_completi_set_l
+ts = cbind(ts_e, ts_l)
+località = c(località_e,località_l)
+p = length(località)
+area_località = c(area_località_e,area_località_l)
+tipo_località = c(tipo_località_e,tipo_località_l)
+```
 
 ```{r}
 source("utils/genera_colori.R")
 source("utils/plot_time_series.R")
-plot_ts = plot_time_series(data = ob1$time_series_sett,
-                           label1 = ob1$area_località,
-                           label2 = ob1$tipo_località,
-                           anno = anno)
 
-svg(paste("output_plot/ts_area_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_ts$plot1
-dev.off()
-
-svg(paste("output_plot/ts_tipo_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_ts$plot2
+plot_time_series(data = t(ts_e),
+                          label1 = area_località_e,
+                          label2 = tipo_località_e,
+                          anno = paste(anno,"- Emilia Romagna"))
+#plot_e$plot1
+#plot_e$plot2
 ```
 
+```{r}
+plot_time_series(data = t(ts_l),
+                           label1 = area_località_l,
+                           label2 = tipo_località_l,
+                           anno = "2018 - Lombardy")
+#plot_l$plot1
+#plot_l$plot2
+```
 
+```{r}
+plot_time_series(data = t(ts),
+                 label1 = area_località,
+                 label2 = tipo_località,
+                 anno = "2018 - Emilia Romagna and Lombardy")
+#plot$plot1
+#plot$plot2
 
+```
 
+```{r include=FALSE}
+plot_e = plot_time_series(data = t(ts_e),
+                          label1 = area_località_e,
+                          label2 = tipo_località_e,
+                          anno = paste(anno,"- Emilia Romagna"))
+plot_l = plot_time_series(data = t(ts_l),
+                           label1 = area_località_l,
+                           label2 = tipo_località_l,
+                           anno = "2018 - Lombardy")
+plot = plot_time_series(data = t(ts),
+                           label1 = area_località,
+                           label2 = tipo_località,
+                           anno = "2018 - Emilia Romagna and Lombardy")
 
+svg(paste("output_plot/ts_area_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_e$plot1
+dev.off()
 
+svg(paste("output_plot/ts_tipo_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_e$plot2
+dev.off()
 
+svg(paste("output_plot/ts_area_lombardia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_l$plot1
+dev.off()
 
+svg(paste("output_plot/ts_tipo_lombardia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_l$plot2
+dev.off()
 
+svg(paste("output_plot/ts_area_unito_",anno, ".svg",sep=""),width = 9, height = 6)
+plot$plot1
+dev.off()
 
+svg(paste("output_plot/ts_tipo_unito_",anno, ".svg",sep=""),width = 9, height = 6)
+plot$plot2
+dev.off()
 
-
-
-
-
-
-
+```
 
 

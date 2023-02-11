@@ -9,20 +9,30 @@ plot_time_series = function(data, label1, label2, anno, xlab = "Weeks", ylab = "
   colori1 = genera_colori(osservazioni_livelli1)$colori
   colori_livelli1 = genera_colori(osservazioni_livelli1)$colori_livelli
   titolo = paste("Concentration of PM10 in", anno)
-  plot1 = plot.ts(data,plot.type = "single", col=colori1, xlab = xlab, ylab = ylab, main = titolo)
+  plot1 = plot.ts(data,
+          plot.type = "single",
+          col=colori1,
+          xlab = xlab,
+          ylab = ylab,
+          main = titolo)
   legend("top", legend = livelli1, fill = colori_livelli1, bty="n", cex=0.8)
-  plot1_g <- recordPlot()
+  plot1_r <- recordPlot()
   dev.off()
   
   osservazioni_livelli2 = factor(label2)
   livelli2 = levels(osservazioni_livelli2)
   colori2 = genera_colori(osservazioni_livelli2, viridis_pal(option = "C")(3))$colori
   colori_livelli2 = genera_colori(osservazioni_livelli2, viridis_pal(option = "C")(3))$colori_livelli
-  plot2 = plot.ts(data,plot.type = "single", col=colori2, xlab = xlab, ylab = ylab, main = titolo)
+  plot2 = plot.ts(data,
+                  plot.type = "single", 
+                  col=colori2,
+                  xlab = xlab,
+                  ylab = ylab,
+                  main = titolo)
   legend("top", legend = livelli2, fill = colori_livelli2, bty="n", cex=0.8)
-  plot2_g <- recordPlot()
+  plot2_r <- recordPlot()
   dev.off()
   
-  return(list(plot1 = plot1_g,
-              plot2 = plot2_g))
+  return(list(plot1 = plot1_r,
+              plot2 = plot2_r))
 }
