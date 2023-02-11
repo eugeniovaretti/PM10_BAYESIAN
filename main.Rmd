@@ -200,6 +200,8 @@ dati_completi_set_l = ob2$time_series_sett
 
 # Data plot
 
+After running this section the plots can be found in `output_plot`
+
 ```{r}
 # merging data from the two regions
 ts_e = dati_completi_set_e
@@ -219,8 +221,6 @@ plot_time_series(data = t(ts_e),
                           label1 = area_località_e,
                           label2 = tipo_località_e,
                           anno = paste(anno,"- Emilia Romagna"))
-#plot_e$plot1
-#plot_e$plot2
 ```
 
 ```{r}
@@ -228,8 +228,6 @@ plot_time_series(data = t(ts_l),
                            label1 = area_località_l,
                            label2 = tipo_località_l,
                            anno = "2018 - Lombardy")
-#plot_l$plot1
-#plot_l$plot2
 ```
 
 ```{r}
@@ -237,9 +235,6 @@ plot_time_series(data = t(ts),
                  label1 = area_località,
                  label2 = tipo_località,
                  anno = "2018 - Emilia Romagna and Lombardy")
-#plot$plot1
-#plot$plot2
-
 ```
 
 ```{r include=FALSE}
@@ -280,6 +275,160 @@ svg(paste("output_plot/ts_tipo_unito_",anno, ".svg",sep=""),width = 9, height = 
 plot$plot2
 dev.off()
 
+```
+
+
+# Likelihood choice
+
+```{r}
+# remove means from the time series 
+medie = colMeans(ts)
+ts_no_mean = ts
+for (i in 1:p) {
+  ts_no_mean[,i] = ts[,i] - medie[i]
+}
+```
+
+```{r}
+# librerie utili
+# ts package
+# library(itsmr)
+library(ggplot2)
+library(gridExtra)
+# library(forecast)
+# library(TSA)
+library(tseries)
+# library(ggfortify)
+```
+
+
+```{r}
+# look at some random Acf
+n_plot = 3
+plots= vector("list",n_plot*n_plot)
+random_indexes = sample(1:p, n_plot*n_plot)
+j = 1
+for (i in random_indexes) {
+  plots[[j]] = ggAcf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = località[i])
+  j = j+1
+}
+plot_ACF = do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
+#install.packages("svglite")
+ggsave("output_plot/ts_acf_random.svg", plot_ACF, width = 10, height = 10)
+```
+
+```{r}
+# look at some random Pacf
+n_plot = 3
+plots= vector("list",n_plot*n_plot)
+j = 1
+for (i in random_indexes) {
+  plots[[j]] = ggPacf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = località[i])
+  j = j+1
+}
+do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
+ggsave("output_plot/ts_pacf_random.svg", plot_ACF, width = 10, height = 10)
+```
+From the previous plots it seems that an AR1 or AR3 model could be fine
+
+```{r}
+fitted_models_AR1 = vector(mode="list",length = p)
+fitted_models_best = vector(mode="list",length = p)
+coefficienti_AR1 = rep(0,p)
+for(i in 1:p)
+{
+  fitted_models_AR1[[i]] = arima(ts_no_mean[,i], order = c(1,0,0), include.mean = FALSE)
+  coefficienti_AR1[i] = fitted_models_AR1[[i]]$coef
+  fitted_models_best[[i]] = auto.arima(ts_no_mean[,i])
+}
+
+aic_AR1 = rep(0,p)
+aic_best = rep(0,p)
+for(i in 1:p)
+{
+  aic_AR1[i] = fitted_models_AR1[[i]]$aic
+  aic_best[i] = fitted_models_best[[i]]$aic
+}
+```
+
+```{r}
+plot_aic = plot(aic_AR1, pch=19, xlab = "Locations", ylab="aic",type='l', main="AIC comparison between AR(1) and the best ARIMA model")
+points(aic_best, pch=19, col="red",type='l')
+legend("topleft", legend = c("AR(1)", "Best ARIMA model"), fill = c("black","red"), bty="n", cex=0.8)
+```
+
+```{r}
+# save plot
+plot(aic_AR1, pch=19, xlab = "Locations", ylab="aic",type='l', main="AIC comparison between AR(1) and the best ARIMA model")
+points(aic_best, pch=19, col="red",type='l')
+legend("topleft", legend = c("AR(1)", "Best ARIMA model"), fill = c("black","red"), bty="n", cex=0.8)
+plot_aic =  recordPlot()
+dev.off()
+svg(paste("output_plot/aic_comparison_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_aic
+dev.off()
+```
+
+
+```{r}
+source("utils/plot_coefficienti_AR1.R")
+plot_coefficienti_AR1(coefficienti_AR1, area_località, tipo_località)
+```
+
+```{r}
+plot_coeff=plot_coefficienti_AR1(coefficienti_AR1, area_località, tipo_località)
+
+```
+
+```{r}
+# save plots
+svg(paste("output_plot/coeff_area_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_coeff$plot1
+dev.off()
+
+svg(paste("output_plot/coeff_tipo_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_coeff$plot1
+dev.off()
+```
+
+
+# Prior density's hyperparameters
+
+Data from Emilia Romagna available in the previous year (2017) is used in order to set the hyperparameters with frequentist estimates.
+
+```{r}
+anno = "2017"
+ob3 = read_ts_from_emilia(anno = anno)
+plot_time_series(data = t(ob3$time_series_sett),
+                 label1 = ob3$area_località,
+                 label2 = ob3$tipo_località,
+                 anno = "2017 - Emilia Romagna")
+```
+
+```{r}
+plot_old = plot_time_series(data = t(ob3$time_series_sett),
+                 label1 = ob3$area_località,
+                 label2 = ob3$tipo_località,
+                 anno = "2017 - Emilia Romagna")
+```
+
+```{r}
+svg(paste("output_plot/ts_area_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_old$plot1
+dev.off()
+
+svg(paste("output_plot/ts_tipo_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_old$plot2
+dev.off()
+```
+
+
+
+```{r}
+source("utils/calcola_param_prior.R")
+ob4 = calcola_param_prior(ob3$time_series_sett)
+ob4$parametri
+plot_coefficienti_AR1(ob4$coefficienti, ob3$area_località, ob3$tipo_località)
 ```
 
 
