@@ -1,0 +1,68 @@
+---
+title: "main"
+output: html_document
+date: "2023-02-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, # mostra o meno il codice
+                      results = T, # mostra il testo dell' output
+                      #fig.show='hide', # mostra o meno immagini
+                      error = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      tidy = TRUE, # abbellisce il codice
+                      comment = "",
+                      attr.source = ".numberLines")
+```
+
+
+
+```{r}
+
+```
+
+```{r}
+source("utils/read_ts_from_emilia.R")
+# Anni selezionabili: da 2014 a 2019
+anno = "2018"
+ob1 = read_ts_from_emilia(anno = anno)
+names(ob1)
+```
+
+
+
+```{r}
+source("utils/genera_colori.R")
+source("utils/plot_time_series.R")
+plot_ts = plot_time_series(data = ob1$time_series_sett,
+                           label1 = ob1$area_località,
+                           label2 = ob1$tipo_località,
+                           anno = anno)
+
+svg(paste("output_plot/ts_area_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_ts$plot1
+dev.off()
+
+svg(paste("output_plot/ts_tipo_",anno, ".svg",sep=""),width = 9, height = 6)
+plot_ts$plot2
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

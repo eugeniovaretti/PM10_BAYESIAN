@@ -21,6 +21,16 @@ cd PM10_BAYESIAN/bayesmix
 git pull origin master
 cd ..
 ```
+
+To build the executable for the main file `run_mcmc.cc`, please use the following list of commands:
+```
+mkdir build
+cd build
+cmake .. -DDISABLE_TESTS=ON
+make run_mcmc
+cd ..
+```
+
 If there are updates, after having verified that your working tree is clean (git status to check) do:
 ```
 git add bayesmix
