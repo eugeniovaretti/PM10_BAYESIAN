@@ -2,6 +2,7 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
 {
   PM10_Emilia = read.csv(data_name)
   PM10_Emilia = na.omit(PM10_Emilia)
+  
   # divido i dati per località, selezionando un anno in particolare
   località = unique(PM10_Emilia[,"NomeStazione"])
   p = length(località)
@@ -15,13 +16,14 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
 
   dati_anni = read.delim2("input_data/dati_anni.txt", header=FALSE)
   dati_anni = dati_anni[-c(2,5,6)]
-  anno = c(rep("2014",365),rep("2015",365),rep("2016",366),rep("2017",365),rep("2018",365),rep("2019",365))
-  dati_anni = cbind(dati_anni,anno)
+  anno_vett = c(rep("2014",365),rep("2015",365),rep("2016",366),rep("2017",365),rep("2018",365),rep("2019",365))
+  dati_anni = cbind(dati_anni,anno_vett)
   colnames(dati_anni)=c("numero", "giorno","settimana","anno")
   dati_anno = dati_anni[which(dati_anni$anno==anno),]
+  n_giorni = nrow(dati_anno)
   
   # costruisco una matrice 365 x numero_località in cui inserisco i valori di una variabile a piacimento (misurazioni PM10), aggiungo gli opportuni Na
-  dati_completi = matrix(NA, nrow = dim(dati_anno)[1], ncol = p)
+  dati_completi = matrix(NA, nrow = n_giorni, ncol = p)
   colnames(dati_completi) = località
   
   variabile = "Valore"
@@ -50,20 +52,22 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
     {
       dati = dati_completi[which(dati_anni$settimana == j),i]
       dati_completi_set[j,i] = mean(dati,na.rm = TRUE)
+      if(is.nan(dati_completi_set[j,i])){dati_completi_set[j,i]=NA}
     }
   }
   
   # gestisco gli na rimanenti
+  source("utils/ts_imputation.R")
   index = 0
   for(i in 1:p)
   {
-    if(is.na(dati_completi_set[52,i]))
-      dati_completi_set[52,i] = dati_completi_set[51,i]
-    
-    if(sum(is.na.data.frame(data.frame(dati_completi_set[,i]))) > 0){
+    ts = dati_completi_set[,i]
+    n_na = sum(is.na(ts))
+    if(n_na > 0.05*52){
       index = c(index,i)
+    } else if(n_na>0){
+      dati_completi_set[,i] = ts_imputation(ts)
     }
-    
   }
   index = index[-1]
   indici = 1:p
