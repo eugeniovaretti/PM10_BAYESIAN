@@ -40,10 +40,10 @@ plot_clustering <- function(data, coord, loss, M = NULL, a = NULL, dataset_plot,
   
   plot <- ggmap(mapdata) +
     geom_point(data=coord, aes(lon,lat), color=as.numeric(best_clus$estimate), size=3, alpha=0.8) +
-    ggtitle(paste(toupper(loss), " ----- N_clust =", best_clus$nClusters, " ----- M =", M, " ---- Distance Parameter A =", a, sep=" "))
+    ggtitle(paste("Loss: ",toupper(loss), " -- N_clust =", best_clus$nClusters, " -- M =", M, " -- a =", a, sep=" "))
   
   
-  (matplot <- matplot(t(dataset_plot), type="l", lty=1, col=as.numeric(best_clus$estimate), main = paste("optimal under", toupper(loss), sep=" ")))
+  (matplot <- matplot(t(dataset_plot), type="l", lty=1, col=as.numeric(best_clus$estimate), main = paste("Optimal clustering under", toupper(loss), sep=" "), xlab = "weeks", ylab = "PM10"))
   matplot_g <- recordPlot()
   dev.off()
   
