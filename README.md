@@ -13,7 +13,7 @@ git clone --recursive git@github.com:eugeniovaretti/PM10_BAYESIAN
 ```
 In the latter case you have to register your ssh keys on a github account.
 
-After the cloning of the PM_10 project, you need to set up bayesmix to run properly the project.
+After the cloning of the PM_10 project, you need to set up bayesmix to run properly the code.  
 To build the executable for the main file `run_mcmc.cc`, please use the following list of commands:
 ```
 git submodule update
