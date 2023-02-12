@@ -13,24 +13,27 @@ git clone --recursive git@github.com:eugeniovaretti/PM10_BAYESIAN
 ```
 In the latter case you have to register your ssh keys on a github account.
 
-
-
-To download bayesmix 's updates type
-```
-cd PM10_BAYESIAN/bayesmix
-git pull origin master
-cd ..
-```
-
+After the cloning of the PM_10 project, you need to set up bayesmix to run properly the project.
 To build the executable for the main file `run_mcmc.cc`, please use the following list of commands:
 ```
+git submodule update
+cd bayesmix
 mkdir build
 cd build
 cmake .. -DDISABLE_TESTS=ON
 make run_mcmc
 cd ..
+cd ..
 ```
 
+
+# Only for "interested" users
+To download bayesmix 's updates type
+```
+cd bayesmix
+git pull origin master
+cd ..
+```
 If there are updates, after having verified that your working tree is clean (git status to check) do:
 ```
 git add bayesmix
