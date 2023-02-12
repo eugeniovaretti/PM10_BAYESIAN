@@ -198,9 +198,6 @@ tipo_località_l = ob2$tipo_località
 dati_completi_set_l = ob2$time_series_sett
 ```
 
-# Data plot
-
-After running this section the plots can be found in `output_plot`
 
 ```{r}
 # merging data from the two regions
@@ -212,6 +209,13 @@ p = length(località)
 area_località = c(area_località_e,area_località_l)
 tipo_località = c(tipo_località_e,tipo_località_l)
 ```
+
+
+# Data plot
+
+After running this section the plots can be found in `output_plot`
+
+
 
 ```{r}
 source("utils/genera_colori.R")
@@ -430,5 +434,46 @@ ob4 = calcola_param_prior(ob3$time_series_sett)
 ob4$parametri
 plot_coefficienti_AR1(ob4$coefficienti, ob3$area_località, ob3$tipo_località)
 ```
+
+
+# Cohesion function's hyperparameters
+
+## Choice of M
+
+
+```{r}
+
+```
+
+
+
+
+One need to include spatial information in order to run the mcmc algorithm.
+
+```{r}
+source("utils/calcola_coordinate.R")
+prova = calcola_coordinate(località)
+```
+
+```{r}
+library(raster)
+dist_lonlat = pointDistance(prova$coordinate_long_lat, prova$coordinate_long_lat, lonlat=T,
+allpairs=T)/ 1000
+```
+
+
+# MCMC algorithm
+
+Now everything is ready to run the mcmc algorithm.
+
+```{r}
+
+```
+
+
+
+
+
+
 
 
