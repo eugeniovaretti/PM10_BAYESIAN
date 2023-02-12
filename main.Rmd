@@ -16,6 +16,17 @@ knitr::opts_chunk$set(echo = T, # mostra o meno il codice
                       attr.source = ".numberLines")
 ```
 
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#if not installed install all the following libraries
+library(tseries)
+library(visdat)
+library(raster)
+library(ggplot2)
+library(gridExtra)
+library(forecast)
+library(svglite)
+```
 # Data cleaning
 
 This section describes the procedure used to clean the data relating to the Emilia Romagna and Lombardy regions. This data will be used by the mcmc algorithm.
