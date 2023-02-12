@@ -1,4 +1,4 @@
-calcola_coordinate = function(località, file_name = "Stations_Coord.csv")
+calcola_coordinate = function(località, file_name = "input_data/Stations_Coord.csv")
 {
   coord = read.csv(file_name)
   p = length(località)
@@ -17,20 +17,10 @@ calcola_coordinate = function(località, file_name = "Stations_Coord.csv")
   coordinate_lat_long = coord[indici,3:4]
   lat <- coordinate_lat_long[,1]
   long <- coordinate_lat_long[,2]
-  
-  R <- 6371 # set the approx of Earth radius R
-  
-  # compute cartesian coordinates
-  x <- R*cos(lat)*cos(long)
-  y <- R*cos(lat)*sin(long)
-  z <- R*sin(lat)
-  
-  # create new dataframes
-  coordinate_x_y_z <- cbind(x,y,z)
-  coordinate_x_y <- cbind(x,y)
+  coordinate_long_lat = cbind(long, lat)
+  coordinate_lat_long = cbind(lat, long)
   
   list(coordinate_lat_long = coordinate_lat_long,
-       coordinate_x_y_z = coordinate_x_y_z,
-       coordinate_x_y = coordinate_x_y)
+       coordinate_long_lat = coordinate_long_lat)
   
 }
