@@ -1,6 +1,8 @@
 ---
 title: "main"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "2023-02-10"
 ---
 
@@ -341,8 +343,8 @@ for (i in random_indexes) {
   plots[[j]] = ggPacf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = località[i])
   j = j+1
 }
-do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
-ggsave("output_plot/ts_pacf_random.svg", plot_ACF, width = 10, height = 10)
+plot_PACF = do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
+ggsave("output_plot/ts_pacf_random.svg", plot_PACF, width = 10, height = 10)
 ```
 From the previous plots it seems that an AR1 or AR3 model could be fine
 
@@ -447,44 +449,204 @@ plot_coefficienti_AR1(ob4$coefficienti, ob3$area_località, ob3$tipo_località)
 ```
 
 
+
+
 # Cohesion function's hyperparameters
 
 ## Choice of M
 
-
-```{r}
-
-```
-
-
-
-
 One need to include spatial information in order to run the mcmc algorithm.
+
+
+## Choice of a
+
+Study of the coordinate
 
 ```{r}
 source("utils/calcola_coordinate.R")
-prova = calcola_coordinate(località)
+ob5 = calcola_coordinate(località)
+coord = ob5$coordinate_lat_long
+lonlat_coord = ob5$coordinate_long_lat
 ```
 
-```{r}
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+library(MASS)
+library(rgl)
+library(DepthProc)
+library(hexbin)
+library(aplpack)
+library(robustbase)
 library(raster)
-dist_lonlat = pointDistance(prova$coordinate_long_lat, prova$coordinate_long_lat, lonlat=T,
-allpairs=T)/ 1000
 ```
+
+
+Study of `a` with Raster library
+
+```{r}
+#trasformo e uso libreria raster
+mat_raster <- pointDistance(lonlat_coord, lonlat=T)/ 1000
+mat_raster <- lower.tri(mat_raster, diag=FALSE)*mat_raster
+mat_raster <- sort(as.numeric(mat_raster[!is.na(mat_raster) & mat_raster>0]))
+list(
+  range = range(mat_raster),
+  mean_d = mean(mat_raster),
+  quantiles = quantile(mat_raster, c(0.05,0.25,0.5,0.75, 0.8, 0.95)),
+  max = max(mat_raster)
+)
+```
+
+Study of `a` with Haversine formula
+
+```{r}
+cost <- pi/180
+n <- nrow(coord)
+  dist_matrix <- matrix(NA, n, n)
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      lat1 <- coord[i, 1]*cost
+      lon1 <- coord[i, 2]*cost
+      lat2 <- coord[j, 1]*cost
+      lon2 <- coord[j, 2]*cost
+      a <- sin((lat2 - lat1)/2)^2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1)/2)^2
+      c <- 2 * atan2(sqrt(a), sqrt(1 - a))
+      d <- 6371 * c
+      dist_matrix[i, j] <- d
+      dist_matrix[j, i] <- d
+    }
+  }
+#dist_matrix
+  
+  matd3 <- lower.tri(dist_matrix, diag=FALSE)*dist_matrix
+  matd3 <- sort(as.numeric(matd3[!is.na(matd3) & matd3>0]))
+list(
+  range = range(matd3),
+  mean_d = mean(matd3),
+  quantiles = quantile(matd3, c(0.05,0.25,0.5,0.75, 0.8, 0.95)),
+  max = max(matd3)
+)
+```
+
+# Output saving
+
+```{r}
+# Salvo i dati
+folder = "bayesmix/resources/datasets/"
+
+write.table(t(ts_no_mean),sep=",", row.names = FALSE, col.names=FALSE , file = paste(folder, "ts.csv", sep=""))
+
+write.table(t(ts),sep=",", row.names = FALSE, col.names=FALSE , file = paste(folder, "ts_mean.csv", sep=""))
+
+write.table(coord,sep=",", row.names = FALSE, col.names=FALSE , file = paste(folder, "coord.csv", sep=""))
+```
+
+
+
+
+
+
 
 
 # MCMC algorithm
 
 Now everything is ready to run the mcmc algorithm.
 
+To set the desired parameter open an Ubuntu terminal and run the following in the `PM10_BAYESIAN` folder:
+
+```{r}
+# # Number of iterations and burnin
+# nano bayesmix/examples/ar1nig_hierarchy/in/algo.asciipb
+# 
+# # Cohesion function's hyperparameters
+# nano bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb
+# 
+# # Prior's hyperparameters (don't change unless you have a good reason)
+# nano bayesmix/examples/ar1nig_hierarchy/in/ts.asciipb
+```
+
+
+To run the mcmc algo:
+
+```{r}
+# cd bayesmix
+# 
+# nano bayesmix/examples/ar1nig_hierarchy/in/algo.asciipb
+# 
+# # Cohesion function's hyperparameters
+# nano bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb
+# 
+# # Prior's hyperparameters (don't change unless you have a good reason)
+# nano bayesmix/examples/ar1nig_hierarchy/in/ts.asciipb
+```
+
+
+# Results
+
+## Number of clusters's distribution
+
 ```{r}
 
 ```
 
+## Best partition
+
+```{r}
+num_clust = read.csv("bayesmix/examples/ar1nig_hierarchy/out/numclust.csv", header = FALSE)
+num_clust = num_clust$V1
+hist(num_clust, prob=F, main="", xlab="Number of clusters", xlim= c(0, max(num_clust)))
+
+partitions = read.csv("bayesmix/examples/ar1nig_hierarchy/out/clustering.csv", header = FALSE)
+
+state_params = read.csv("bayesmix/examples/ar1nig_hierarchy/out/stateparams.csv", header = FALSE)
+
+coord <- read.csv("bayesmix/resources/datasets/coord.csv", header=F)
+
+colnames(coord) <- c("lat","lon")
+
+ts <- read.csv("bayesmix/resources/datasets/ts_mean.csv", header=F)
 
 
+source("utils/plot_clustering.R")
+cohesion_params = read.table('used_parameters.txt', header=F)
+M <- cohesion_params[1,1]
+a <- cohesion_params[2,1]
+
+# in this way it prints any output
+plot_clustering(partitions, coord, "VI" ,M, a, ts, state_params)
+ob6 = plot_clustering(partitions, coord, "VI" ,M, a, ts, state_params)
+
+nome = paste("map_M_", M, "_a_",a,sep="")
+folder = "output_plot/"
+
+save_svg_plot(ob6$plot,name=nome, folder=folder, type="ggplot",width = 10, height = 10)
+# in this way it suppress output
+#b<-plot_clustering(data2, coord, "VI" ,M, a, ts[,-1], clus_chain)
+
+# to plot it write (in the console):
+# x11();ob6$plot
+```
+
+```{r}
+plot_map = 
+```
 
 
+```{r}
+ob6$posterior_unique_vals
+```
 
+```{r}
+plot(1:5,1:5)
+points(2,3)
+plot1= recordPlot()
+```
 
+```{r}
+source("utils/save_svg_plot.R")
+save_svg_plot(plot1)
+```
+```{r}
+replayPlot(plot1)
+
+```
 
