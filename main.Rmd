@@ -7,13 +7,13 @@ date: "2023-02-10"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = T, # mostra o meno il codice
-                      results = T, # mostra il testo dell' output
-                      #fig.show='hide', # mostra o meno immagini
+knitr::opts_chunk$set(echo = T, # show code
+                      results = T, # show output text
+                      #fig.show='hide', # show plot
                       error = FALSE,
                       warning = FALSE,
                       message = FALSE,
-                      tidy = TRUE, # abbellisce il codice
+                      tidy = TRUE, # pretty code
                       comment = "",
                       attr.source = ".numberLines")
 ```
@@ -228,71 +228,45 @@ tipo_località = c(tipo_località_e,tipo_località_l)
 
 After running this section the plots can be found in `output_plot`
 
-
-
 ```{r}
 source("utils/genera_colori.R")
 source("utils/plot_time_series.R")
 
-plot_time_series(data = t(ts_e),
-                          label1 = area_località_e,
-                          label2 = tipo_località_e,
-                          anno = paste(anno,"- Emilia Romagna"))
-```
-
-```{r}
-plot_time_series(data = t(ts_l),
-                           label1 = area_località_l,
-                           label2 = tipo_località_l,
-                           anno = "2018 - Lombardy")
-```
-
-```{r}
-plot_time_series(data = t(ts),
-                 label1 = area_località,
-                 label2 = tipo_località,
-                 anno = "2018 - Emilia Romagna and Lombardy")
-```
-
-```{r include=FALSE}
 plot_e = plot_time_series(data = t(ts_e),
                           label1 = area_località_e,
                           label2 = tipo_località_e,
                           anno = paste(anno,"- Emilia Romagna"))
+
 plot_l = plot_time_series(data = t(ts_l),
-                           label1 = area_località_l,
-                           label2 = tipo_località_l,
-                           anno = "2018 - Lombardy")
+                          label1 = area_località_l,
+                          label2 = tipo_località_l,
+                          anno = "2018 - Lombardy")
+
 plot = plot_time_series(data = t(ts),
-                           label1 = area_località,
-                           label2 = tipo_località,
-                           anno = "2018 - Emilia Romagna and Lombardy")
+                        label1 = area_località,
+                        label2 = tipo_località,
+                        anno = "2018 - Emilia Romagna and Lombardy")
 
-svg(paste("output_plot/ts_area_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_e$plot1
-dev.off()
 
-svg(paste("output_plot/ts_tipo_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_e$plot2
-dev.off()
-
-svg(paste("output_plot/ts_area_lombardia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_l$plot1
-dev.off()
-
-svg(paste("output_plot/ts_tipo_lombardia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_l$plot2
-dev.off()
-
-svg(paste("output_plot/ts_area_unito_",anno, ".svg",sep=""),width = 9, height = 6)
-plot$plot1
-dev.off()
-
-svg(paste("output_plot/ts_tipo_unito_",anno, ".svg",sep=""),width = 9, height = 6)
-plot$plot2
-dev.off()
-
+replayPlot(plot_e$plot1)
+replayPlot(plot_e$plot2)
+replayPlot(plot_l$plot1)
+replayPlot(plot_l$plot2)
+replayPlot(plot$plot1)
+replayPlot(plot$plot2)
 ```
+
+```{r include=FALSE}
+# saving plots
+source("utils/save_svg_plot.R")
+save_svg_plot(plot_e$plot1, paste("ts_area_emilia_",anno, sep=""), "output_plot/")
+save_svg_plot(plot_e$plot2, paste("ts_tipo_emilia_",anno, sep=""), "output_plot/")
+save_svg_plot(plot_l$plot1, paste("ts_area_lombardia_",anno, sep=""), "output_plot/")
+save_svg_plot(plot_l$plot2, paste("ts_tipo_lombardia_",anno, sep=""), "output_plot/")
+save_svg_plot(plot$plot1, paste("ts_area_unito_",anno, sep=""), "output_plot/")
+save_svg_plot(plot$plot2, paste("ts_tipo_unito_",anno, sep=""), "output_plot/")
+```
+
 
 
 # Likelihood choice
@@ -306,21 +280,10 @@ for (i in 1:p) {
 }
 ```
 
-```{r}
-# librerie utili
-# ts package
-# library(itsmr)
-library(ggplot2)
-library(gridExtra)
-# library(forecast)
-# library(TSA)
-library(tseries)
-# library(ggfortify)
-```
-
 
 ```{r}
 # look at some random Acf
+set.seed(1998)
 n_plot = 3
 plots= vector("list",n_plot*n_plot)
 random_indexes = sample(1:p, n_plot*n_plot)
@@ -330,8 +293,7 @@ for (i in random_indexes) {
   j = j+1
 }
 plot_ACF = do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
-#install.packages("svglite")
-ggsave("output_plot/ts_acf_random.svg", plot_ACF, width = 10, height = 10)
+save_svg_plot(plot_ACF, name="ts_acf_random", folder="output_plot/", type="ggplot", width = 10, height = 10)
 ```
 
 ```{r}
@@ -344,8 +306,9 @@ for (i in random_indexes) {
   j = j+1
 }
 plot_PACF = do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
-ggsave("output_plot/ts_pacf_random.svg", plot_PACF, width = 10, height = 10)
+save_svg_plot(plot_PACF, name="ts_pacf_random", folder="output_plot/", type="ggplot", width = 10, height = 10)
 ```
+
 From the previous plots it seems that an AR1 or AR3 model could be fine
 
 ```{r}
@@ -369,43 +332,29 @@ for(i in 1:p)
 ```
 
 ```{r}
-plot_aic = plot(aic_AR1, pch=19, xlab = "Locations", ylab="aic",type='l', main="AIC comparison between AR(1) and the best ARIMA model")
-points(aic_best, pch=19, col="red",type='l')
-legend("topleft", legend = c("AR(1)", "Best ARIMA model"), fill = c("black","red"), bty="n", cex=0.8)
-```
-
-```{r}
-# save plot
 plot(aic_AR1, pch=19, xlab = "Locations", ylab="aic",type='l', main="AIC comparison between AR(1) and the best ARIMA model")
 points(aic_best, pch=19, col="red",type='l')
 legend("topleft", legend = c("AR(1)", "Best ARIMA model"), fill = c("black","red"), bty="n", cex=0.8)
-plot_aic =  recordPlot()
-dev.off()
-svg(paste("output_plot/aic_comparison_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_aic
-dev.off()
+plot_aic = recordPlot()
+```
+
+```{r include=FALSE}
+# save plot
+save_svg_plot(plot_aic, name=paste("aic_comparison_",anno,sep=""), folder="output_plot/")
 ```
 
 
 ```{r}
 source("utils/plot_coefficienti_AR1.R")
-plot_coefficienti_AR1(coefficienti_AR1, area_località, tipo_località)
-```
-
-```{r}
 plot_coeff=plot_coefficienti_AR1(coefficienti_AR1, area_località, tipo_località)
-
+replayPlot(plot_coeff$plot1)
+replayPlot(plot_coeff$plot2)
 ```
 
-```{r}
-# save plots
-svg(paste("output_plot/coeff_area_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_coeff$plot1
-dev.off()
-
-svg(paste("output_plot/coeff_tipo_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_coeff$plot1
-dev.off()
+```{r, include=FALSE}
+# save plot
+save_svg_plot(plot_coeff$plot1, name=paste("coeff_area_",anno,sep=""), folder="output_plot/")
+save_svg_plot(plot_coeff$plot2, name=paste("coeff_tipo_",anno,sep=""), folder="output_plot/")
 ```
 
 
@@ -414,38 +363,35 @@ dev.off()
 Data from Emilia Romagna available in the previous year (2017) is used in order to set the hyperparameters with frequentist estimates.
 
 ```{r}
-anno = "2017"
-ob3 = read_ts_from_emilia(anno = anno)
-plot_time_series(data = t(ob3$time_series_sett),
-                 label1 = ob3$area_località,
-                 label2 = ob3$tipo_località,
-                 anno = "2017 - Emilia Romagna")
-```
-
-```{r}
+anno2 = "2017"
+ob3 = read_ts_from_emilia(anno = anno2)
 plot_old = plot_time_series(data = t(ob3$time_series_sett),
-                 label1 = ob3$area_località,
-                 label2 = ob3$tipo_località,
-                 anno = "2017 - Emilia Romagna")
+                            label1 = ob3$area_località,
+                            label2 = ob3$tipo_località,
+                            anno = "2017 - Emilia Romagna")
+replayPlot(plot_old$plot1)
+replayPlot(plot_old$plot2)
 ```
 
-```{r}
-svg(paste("output_plot/ts_area_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_old$plot1
-dev.off()
 
-svg(paste("output_plot/ts_tipo_emilia_",anno, ".svg",sep=""),width = 9, height = 6)
-plot_old$plot2
-dev.off()
+```{r, include=FALSE}
+save_svg_plot(plot_old$plot1, name=paste("ts_area_emilia_",anno2,sep=""), folder="output_plot/")
+
+save_svg_plot(plot_old$plot2, name=paste("ts_tipo_emilia_",anno2,sep=""), folder="output_plot/")
 ```
 
 
 
 ```{r}
 source("utils/calcola_param_prior.R")
-ob4 = calcola_param_prior(ob3$time_series_sett)
+ob4 = calcola_param_prior(ob3$time_series_sett_no_mean)
 ob4$parametri
-plot_coefficienti_AR1(ob4$coefficienti, ob3$area_località, ob3$tipo_località)
+```
+
+```{r}
+plot_coeff_old = plot_coefficienti_AR1(ob4$coefficienti, ob3$area_località, ob3$tipo_località)
+replayPlot(plot_coeff_old$plot1)
+replayPlot(plot_coeff_old$plot2)
 ```
 
 
@@ -530,7 +476,6 @@ list(
 # Output saving
 
 ```{r}
-# Salvo i dati
 folder = "bayesmix/resources/datasets/"
 
 write.table(t(ts_no_mean),sep=",", row.names = FALSE, col.names=FALSE , file = paste(folder, "ts.csv", sep=""))
@@ -551,83 +496,109 @@ write.table(coord,sep=",", row.names = FALSE, col.names=FALSE , file = paste(fol
 
 Now everything is ready to run the mcmc algorithm.
 
-To set the desired parameter open an Ubuntu terminal and run the following in the `PM10_BAYESIAN` folder:
+Open an Ubuntu terminal and run the following in the `PM10_BAYESIAN` folder to set the desired parameter:
 
-```{r}
-# # Number of iterations and burnin
-# nano bayesmix/examples/ar1nig_hierarchy/in/algo.asciipb
-# 
-# # Cohesion function's hyperparameters
-# nano bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb
-# 
-# # Prior's hyperparameters (don't change unless you have a good reason)
-# nano bayesmix/examples/ar1nig_hierarchy/in/ts.asciipb
-```
+Number of iterations and burnin:
+
+`nano bayesmix/examples/ar1nig_hierarchy/in/algo.asciipb`
+
+Cohesion function's hyperparameters (done better in run.sh):
+
+`nano bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb`
+
+Prior's hyperparameters (don't change unless you have a good reason):
+
+`nano bayesmix/examples/ar1nig_hierarchy/in/ts.asciipb`
 
 
-To run the mcmc algo:
+*To run the mcmc algorithm:*
 
-```{r}
-# cd bayesmix
-# 
-# nano bayesmix/examples/ar1nig_hierarchy/in/algo.asciipb
-# 
-# # Cohesion function's hyperparameters
-# nano bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb
-# 
-# # Prior's hyperparameters (don't change unless you have a good reason)
-# nano bayesmix/examples/ar1nig_hierarchy/in/ts.asciipb
-```
+`chmod +x run.sh`
+
+`./run.sh`
+
+
 
 
 # Results
 
-## Number of clusters's distribution
-
 ```{r}
+source("utils/plot_clustering.R")
+source("utils/save_svg_plot.R")
 
-```
+cohesion_params = read.table('used_parameters.txt', header=F)
+M <- cohesion_params[1,1]
+a <- cohesion_params[2,1]
 
-## Best partition
-
-```{r}
 num_clust = read.csv("bayesmix/examples/ar1nig_hierarchy/out/numclust.csv", header = FALSE)
-num_clust = num_clust$V1
-hist(num_clust, prob=F, main="", xlab="Number of clusters", xlim= c(0, max(num_clust)))
+names(num_clust)="n"
 
 partitions = read.csv("bayesmix/examples/ar1nig_hierarchy/out/clustering.csv", header = FALSE)
 
 state_params = read.csv("bayesmix/examples/ar1nig_hierarchy/out/stateparams.csv", header = FALSE)
 
-coord <- read.csv("bayesmix/resources/datasets/coord.csv", header=F)
+coord = read.csv("bayesmix/resources/datasets/coord.csv", header=F)
+coord = cbind(coord, località)
+colnames(coord) = c("lat","lon","loc")
 
-colnames(coord) <- c("lat","lon")
+ts_read = read.csv("bayesmix/resources/datasets/ts_mean.csv", header=F)
+```
 
-ts <- read.csv("bayesmix/resources/datasets/ts_mean.csv", header=F)
+
+## Number of clusters's distribution
 
 
-source("utils/plot_clustering.R")
-cohesion_params = read.table('used_parameters.txt', header=F)
-M <- cohesion_params[1,1]
-a <- cohesion_params[2,1]
+```{r}
+x_axis_labels <- min(num_clust$n):max(num_clust$n)
 
-# in this way it prints any output
-plot_clustering(partitions, coord, "VI" ,M, a, ts, state_params)
-ob6 = plot_clustering(partitions, coord, "VI" ,M, a, ts, state_params)
 
-nome = paste("map_M_", M, "_a_",a,sep="")
-folder = "output_plot/"
+title = paste("Parameters: M = ", M, ", a = ",a," Km",sep="")
+plot_nclus = ggplot(num_clust,aes(x = n)) + 
+              theme_minimal() +
+           geom_histogram(binwidth = 1,fill="#153b70",color="white") + 
+              ggtitle(title) + 
+              scale_x_continuous(labels = x_axis_labels, breaks = x_axis_labels) + 
+              xlab("Number of clusters") +
+              ylab("Iterations") +
+              theme(axis.text=element_text(size=rel(1.15)),
+                    axis.title=element_text(size=rel(1.5)),
+                    plot.title = element_text(face="bold", size=rel(1.75), hjust = 0.5),
+                    legend.text = element_text(size=rel(1.15)),
+                    legend.position = 'none')
 
-save_svg_plot(ob6$plot,name=nome, folder=folder, type="ggplot",width = 10, height = 10)
-# in this way it suppress output
-#b<-plot_clustering(data2, coord, "VI" ,M, a, ts[,-1], clus_chain)
+nome = paste("hist_n_clust_", M, "_a_",a,sep="")
+save_svg_plot(plot_nclus, name=nome, folder = "output_plot/", type = "ggplot")
 
-# to plot it write (in the console):
+plot_nclus
+```
+
+## Analysis of the best partition
+
+```{r}
+label = TRUE
+ob6 = plot_clustering(partitions, coord, "VI" ,M, a, ts_read, state_params, label = label)
+ob6
+# to plot in the console):
 # x11();ob6$plot
 ```
 
-```{r}
-plot_map = 
+```{r,include=FALSE}
+#save
+if(label)
+{
+  nome = paste("map_M_", M, "_a_",a,"_label",sep="")
+  save_svg_plot(ob6$plot,name=nome, folder="output_plot/", type="ggplot",width = 15, height = 15)
+}else if (!label)
+{
+  nome = paste("map_M_", M, "_a_",a,sep="")
+  save_svg_plot(ob6$plot,name=nome, folder="output_plot/", type="ggplot",width = 10, height = 10)
+}
+
+nome = paste("ts_output_", M, "_a_",a,sep="")
+save_svg_plot(ob6$matplot, name=nome, folder = "output_plot/")
+
+nome = paste("post_similarity_matrix_", M, "_a_",a,sep="")
+save_svg_plot(ob6$psm, name=nome, folder = "output_plot/")
 ```
 
 
@@ -635,18 +606,7 @@ plot_map =
 ob6$posterior_unique_vals
 ```
 
-```{r}
-plot(1:5,1:5)
-points(2,3)
-plot1= recordPlot()
-```
 
-```{r}
-source("utils/save_svg_plot.R")
-save_svg_plot(plot1)
-```
-```{r}
-replayPlot(plot1)
 
-```
+
 
