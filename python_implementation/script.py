@@ -11,35 +11,22 @@ tfd = tfp.distributions
 import sys
 
 # Importazione dati
-# PM10
-dataset = pd.read_csv('ts_nona_3.csv')
-dataset_plot = pd.read_csv('ts_nona.csv')
-#print(dataset.shape)
-#print(dataset_plot.shape)
-dataset.head()
+dataset = pd.read_csv('../bayesmix/resources/datasets/ts.csv', header=None)
+dataset_plot = pd.read_csv('../bayesmix/resources/datasets/ts_mean.csv', header=None)
+print(dataset.shape)
+print(dataset_plot.shape)
+T = dataset.shape[1]
 
 # Coordinate
-coords_file = pd.read_csv('coordinate.csv')
-#print(coords_file.shape)
+coords_file = pd.read_csv('../bayesmix/resources/datasets/coord.csv', header=None)
+print(coords_file.shape)
 coords_file.head()
 
 
-def inspect_dataframe(df, columns):
-    figs, axs = plt.subplots(len(columns), 1, sharex=True)
-    for i, col in enumerate(columns):
-        axs[i].plot(df.iloc[col,1:df.shape[1]])
-        axs[i].set_title(df.iloc[col,0])
-        #axs[i].plot(df.iloc[col+1,1:df.shape[1]])
-    plt.savefig("prova.png")
-
-#inspect_dataframe(dataset, {1,2})
-
-
-# Removing localities' names -> numpy matrix
-y = np.array(dataset.iloc[:,1:53]) # 53 escluso
-y_plot = np.array(dataset_plot.iloc[:,1:53]) # 53 escluso
+y = np.array(dataset)
+y_plot = np.array(dataset_plot)
 # y_i_t (rows -> localities; columns->weeks)
-coords = np.array(dataset.iloc[:,1:3])
+coords = np.array(coords_file)
 
 # Functions for time series
 
@@ -246,14 +233,14 @@ def run_one_gibbs(y, clus_allocs, coords, rho_h, sig_2_h, M, a):
 
 
 ## Fixed parameters
-rho_0 = 0.4633111
-lam = 11338.11
-alpha = 9.558688
-beta = 773.901
+rho_0 = 0.4807468
+lam = 13625.29
+alpha = 7.690926
+beta = 1257.956
 
 ## Initial values
 rho_first = rho_0 # media campionaria dei rho
-sig_2_first = 0.007975127
+sig_2_first = 10
 
 # sPPM parameters
 a = float(sys.argv[1]) #3*12.85
@@ -263,7 +250,7 @@ data = y
 data_plot = y_plot
 n = data.shape[0]
 
-n_clus_init = 2
+n_clus_init = 3
 
 clus_allocs = np.random.choice(np.arange(n_clus_init), size=y.shape[0])
 
@@ -303,7 +290,7 @@ for i in range(niter):
 print()
 # Salvataggio file
 
-pd.DataFrame(clus_chain).to_csv(f'clus_chain_M_{M}_a_{int(a)}.csv')
+pd.DataFrame(clus_chain).to_csv(f'output_data/clus_chain_M_{M}_a_{int(a)}.csv')
 
 # distribution of the number of cluster
 nclus_chain = np.zeros((niter-nburn), dtype=int)
@@ -316,7 +303,7 @@ plt.xticks(x_graph)
 plt.xlabel("Number of clusters", size=16)
 plt.title("Barplot of the number of clusters", size=20, weight='bold')
 
-plt.savefig(f'n_clus_M_{M}_a_{int(a)}.svg')
+plt.savefig(f'output_plot/n_clus_M_{M}_a_{int(a)}.svg')
 
 
 
@@ -343,4 +330,4 @@ for j in range(checks):
     axs[int(j/2), j%2].set_title("MCMC iteration #" + str(clus_index) + \
                                  " Number of clusters: " + str(nclus_chain[clus_index]), size=16)
 
-plt.savefig(f'time_series_it_M_{M}_a_{int(a)}.svg')
+plt.savefig(f'output_plot/time_series_it_M_{M}_a_{int(a)}.svg')
