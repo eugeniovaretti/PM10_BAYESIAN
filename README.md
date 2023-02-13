@@ -4,7 +4,7 @@ This projects contain (almost) all the work done for the course of Bayesian Stat
 # Installation
 
 ## For end users
-The repository contains as module the bayesmix library, a C++ library for running MCMC simulations in Bayesian mixture models.
+The repository contains as module the 'bayesmix' library, a C++ library for running MCMC simulations in Bayesian mixture models.
 
 **Prerequisites**: to build `bayesmix` you will need `git`, `pkg-config` and a recent version of `cmake`.
 
