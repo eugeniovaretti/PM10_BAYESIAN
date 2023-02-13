@@ -1,4 +1,4 @@
-# Clustering spatial times via Bayesian nonparametrics
+# Clustering spatial time series via Bayesian nonparametric
 This projects contain (almost) all the work done for the course of Bayesian Statistic a.y 2022/2023 for the MSc. Mathematical Engineering, Politecnico di Milano.  
 
 # Installation
