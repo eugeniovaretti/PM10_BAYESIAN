@@ -47,7 +47,7 @@ cd ..
 ```
 
 # Reproducibility  
-This section is intended for any user who wants to run the analysis to reproduce the same results, or for any user who wants to analyze results with different hyperparameter values (in particular, the code is optimized and automated to test grids of totalmass (`totalmass`) and distance (`a`) values), or for those who want to apply the same model to their own data.
+This section is intended for any user who wants to run the analysis to reproduce the same results, or for any user who wants to analyze results with different hyperparameter values (in particular, the code is optimized and automated to test grids of totalmass (`totalmass`) and distance (`a`) values), or for those who want to apply the same model to their own data.  
 The repository is structured as follow:
 - `bayesmix` : contains the submodule that performs the MCMC simulations  
 - `input_data` : contains all the input data (time series and covariates for the model)
