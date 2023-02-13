@@ -88,10 +88,17 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
     j=j+1
   }
   
+  medie = colMeans(dati_completi_set)
+  ts_no_mean = dati_completi_set
+  for (i in 1:p) {
+    ts_no_mean[,i] = dati_completi_set[,i] - medie[i]
+  }
+  
   list(località = località,
        area_località = area_località,
        tipo_località = tipo_località,
-       time_series_sett = dati_completi_set)
+       time_series_sett = dati_completi_set,
+       time_series_sett_no_mean = ts_no_mean)
   
   #write.csv(t(dati_completi_set), row.names = FALSE, col.names = FALSE, file = paste('ts_emilia_', anno, '.csv', sep=""))
   #write.csv(t(dati_completi_set),  file = paste('ts_emilia_', anno, '_con_nomi.csv', sep=""))
