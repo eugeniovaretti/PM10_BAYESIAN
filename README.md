@@ -1,4 +1,4 @@
-# PM10_BAYESIAN
+# Clustering spatial times via Bayesian nonparametrics
 This projects contain (almost) all the work done for the course of Bayesian Statistic a.y 2022/2023 for the MSc. Mathematical Engineering, Politecnico di Milano.  
 
 # Installation
@@ -58,14 +58,14 @@ The repository is structured as follow:
 - `run.sh` : 
 
 # Authors  
-Tutor: Matteo Gianella ([@TeoGiane](https://github.com/TeoGiane))
-
 - Carnevali Davide ([@DavideCarne](https://github.com/DavideCarne))
 - Gurrieri Davide ([@davide-gurrieri](https://github.com/davide-gurrieri))
 - Moroni Sofia ([@SofiaMoroni9](https://github.com/SofiaMoroni9))
 - Rescalli Sara ([@rescallisara](https://github.com/rescallisara))
 - Varetti Eugenio ([@eugeniovaretti](https://github.com/eugeniovaretti))
 - Zelioli Chiara ([@Zeliolina](https://github.com/Zeliolina))
+
+Tutor: Matteo Gianella ([@TeoGiane](https://github.com/TeoGiane))
 
 # Only for "interested" users  
 To download bayesmix 's updates type
