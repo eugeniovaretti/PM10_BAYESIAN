@@ -49,9 +49,9 @@ n_giorni = 365
 if(anno=="2016"){n_giorni = 366}
 
 ob1 = read_ts_from_emilia(anno = anno)
-località_e = ob1$località
-area_località_e = ob1$area_località
-tipo_località_e = ob1$tipo_località
+localita_e = ob1$localita
+area_localita_e = ob1$area_localita
+tipo_localita_e = ob1$tipo_localita
 dati_completi_set_e = t(ob1$time_series_sett)
 ```
 
@@ -80,8 +80,8 @@ PM10_Emilia = na.omit(PM10_Emilia)
 
 ```{r}
 # split data based on locations
-località_e = unique(PM10_Emilia[,"NomeStazione"])
-p_e = length(località_e)
+localita_e = unique(PM10_Emilia[,"NomeStazione"])
+p_e = length(localita_e)
 
 data_e = PM10_Emilia[which(PM10_Emilia[,"Anno"]== anno),]
 
@@ -89,7 +89,7 @@ data_e = PM10_Emilia[which(PM10_Emilia[,"Anno"]== anno),]
 data_split_e = vector(mode = "list", length = p_e)
 for(i in 1:p_e)
 {
-  data_split_e[[i]] = data_e[which(data_e[,"NomeStazione"]==località_e[i]), ]
+  data_split_e[[i]] = data_e[which(data_e[,"NomeStazione"]==localita_e[i]), ]
 }
 ```
 
@@ -116,7 +116,7 @@ dati_anno = dati_anni[which(dati_anni$anno==anno),]
 ```{r}
 # build a matrix 
 dati_completi_e = matrix(NA, nrow = n_giorni, ncol = p_e)
-colnames(dati_completi_e) = località_e
+colnames(dati_completi_e) = localita_e
 
 variabile = "Valore"
 
@@ -143,7 +143,7 @@ vis_miss(data.frame(dati_completi_e))
 ```{r}
 # mean by weeks
 dati_completi_set_e = matrix(NA, nrow = 52, ncol = p_e)
-colnames(dati_completi_set_e) = località_e
+colnames(dati_completi_set_e) = localita_e
 
 for(i in 1:p_e)
 {
@@ -178,7 +178,7 @@ indici = 1:p_e
 indici = indici[-index]
 dati_completi_set_e = dati_completi_set_e[,indici]
 p_e = ncol(dati_completi_set_e)
-località_e = località_e[indici]
+localita_e = localita_e[indici]
 ```
 
 ```{r}
@@ -187,13 +187,13 @@ vis_miss(data.frame(dati_completi_set_e))
 
 ```{r}
 # labels related to locations
-area_località_e = rep("",length(indici))
-tipo_località_e = rep("",length(indici))
+area_localita_e = rep("",length(indici))
+tipo_localita_e = rep("",length(indici))
 j=1
 for (i in indici)
 {
-  area_località_e[j] = unique(data_split_e[[i]][,"Area"])
-  tipo_località_e[j] = unique(data_split_e[[i]][,"Tipo"])
+  area_localita_e[j] = unique(data_split_e[[i]][,"Area"])
+  tipo_localita_e[j] = unique(data_split_e[[i]][,"Tipo"])
   j=j+1
 }
 ```
@@ -205,9 +205,9 @@ The Lombardy data are already clean, they are only prepared for the mcmc algorit
 ```{r}
 source("utils/read_ts_from_lombardia.R")
 ob2 =read_ts_from_lombardia()
-località_l = ob2$località
-area_località_l = ob2$area_località
-tipo_località_l = ob2$tipo_località
+localita_l = ob2$localita
+area_localita_l = ob2$area_localita
+tipo_localita_l = ob2$tipo_localita
 dati_completi_set_l = ob2$time_series_sett
 ```
 
@@ -217,10 +217,10 @@ dati_completi_set_l = ob2$time_series_sett
 ts_e = dati_completi_set_e
 ts_l = dati_completi_set_l
 ts = cbind(ts_e, ts_l)
-località = c(località_e,località_l)
-p = length(località)
-area_località = c(area_località_e,area_località_l)
-tipo_località = c(tipo_località_e,tipo_località_l)
+localita = c(localita_e,localita_l)
+p = length(localita)
+area_localita = c(area_localita_e,area_localita_l)
+tipo_localita = c(tipo_localita_e,tipo_localita_l)
 ```
 
 
@@ -233,18 +233,18 @@ source("utils/genera_colori.R")
 source("utils/plot_time_series.R")
 
 plot_e = plot_time_series(data = t(ts_e),
-                          label1 = area_località_e,
-                          label2 = tipo_località_e,
+                          label1 = area_localita_e,
+                          label2 = tipo_localita_e,
                           anno = paste(anno,"- Emilia Romagna"))
 
 plot_l = plot_time_series(data = t(ts_l),
-                          label1 = area_località_l,
-                          label2 = tipo_località_l,
+                          label1 = area_localita_l,
+                          label2 = tipo_localita_l,
                           anno = "2018 - Lombardy")
 
 plot = plot_time_series(data = t(ts),
-                        label1 = area_località,
-                        label2 = tipo_località,
+                        label1 = area_localita,
+                        label2 = tipo_localita,
                         anno = "2018 - Emilia Romagna and Lombardy")
 
 
@@ -289,7 +289,7 @@ plots= vector("list",n_plot*n_plot)
 random_indexes = sample(1:p, n_plot*n_plot)
 j = 1
 for (i in random_indexes) {
-  plots[[j]] = ggAcf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = località[i])
+  plots[[j]] = ggAcf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = localita[i])
   j = j+1
 }
 plot_ACF = do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
@@ -302,11 +302,11 @@ n_plot = 3
 plots= vector("list",n_plot*n_plot)
 j = 1
 for (i in random_indexes) {
-  plots[[j]] = ggPacf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = località[i])
+  plots[[j]] = ggPacf(ts(ts_no_mean[,i]), lag.max = 52) + labs(title = localita[i])
   j = j+1
 }
 plot_PACF = do.call(grid.arrange, c(plots, ncol = n_plot, nrow = n_plot))
-save_svg_plot(plot_PACF, name="ts_pacf_random", folder="output_plot/", type="ggplot", width = 10, height = 10)
+save_svg_plot(plot_PACF, name="ts_pacf_random", folder="output_plot/", type="ggplot", width = 6.5, height = 6.5)
 ```
 
 From the previous plots it seems that an AR1 or AR3 model could be fine
@@ -346,7 +346,7 @@ save_svg_plot(plot_aic, name=paste("aic_comparison_",anno,sep=""), folder="outpu
 
 ```{r}
 source("utils/plot_coefficienti_AR1.R")
-plot_coeff=plot_coefficienti_AR1(coefficienti_AR1, area_località, tipo_località)
+plot_coeff=plot_coefficienti_AR1(coefficienti_AR1, area_localita, tipo_localita)
 replayPlot(plot_coeff$plot1)
 replayPlot(plot_coeff$plot2)
 ```
@@ -366,8 +366,8 @@ Data from Emilia Romagna available in the previous year (2017) is used in order 
 anno2 = "2017"
 ob3 = read_ts_from_emilia(anno = anno2)
 plot_old = plot_time_series(data = t(ob3$time_series_sett),
-                            label1 = ob3$area_località,
-                            label2 = ob3$tipo_località,
+                            label1 = ob3$area_localita,
+                            label2 = ob3$tipo_localita,
                             anno = "2017 - Emilia Romagna")
 replayPlot(plot_old$plot1)
 replayPlot(plot_old$plot2)
@@ -389,7 +389,7 @@ ob4$parametri
 ```
 
 ```{r}
-plot_coeff_old = plot_coefficienti_AR1(ob4$coefficienti, ob3$area_località, ob3$tipo_località)
+plot_coeff_old = plot_coefficienti_AR1(ob4$coefficienti, ob3$area_localita, ob3$tipo_localita)
 replayPlot(plot_coeff_old$plot1)
 replayPlot(plot_coeff_old$plot2)
 ```
@@ -410,7 +410,7 @@ Study of the coordinate
 
 ```{r}
 source("utils/calcola_coordinate.R")
-ob5 = calcola_coordinate(località)
+ob5 = calcola_coordinate(localita)
 coord = ob5$coordinate_lat_long
 lonlat_coord = ob5$coordinate_long_lat
 ```
@@ -486,12 +486,6 @@ write.table(coord,sep=",", row.names = FALSE, col.names=FALSE , file = paste(fol
 ```
 
 
-
-
-
-
-
-
 # MCMC algorithm
 
 Now everything is ready to run the mcmc algorithm.
@@ -538,17 +532,16 @@ partitions = read.csv("bayesmix/examples/ar1nig_hierarchy/out/clustering.csv", h
 state_params = read.csv("bayesmix/examples/ar1nig_hierarchy/out/stateparams.csv", header = FALSE)
 
 coord = read.csv("bayesmix/resources/datasets/coord.csv", header=F)
-coord = cbind(coord, località)
+coord = cbind(coord, localita)
 colnames(coord) = c("lat","lon","loc")
 
 ts_read = read.csv("bayesmix/resources/datasets/ts_mean.csv", header=F)
 ```
 
 
-## Number of clusters's distribution
+## Number of clusters distribution
 
-
-```{r}
+```{r fig.height=6, fig.width=9}
 x_axis_labels <- min(num_clust$n):max(num_clust$n)
 
 
@@ -560,9 +553,9 @@ plot_nclus = ggplot(num_clust,aes(x = n)) +
               scale_x_continuous(labels = x_axis_labels, breaks = x_axis_labels) + 
               xlab("Number of clusters") +
               ylab("Iterations") +
-              theme(axis.text=element_text(size=rel(1.15)),
-                    axis.title=element_text(size=rel(1.5)),
-                    plot.title = element_text(face="bold", size=rel(1.75), hjust = 0.5),
+              theme(axis.text=element_text(size=rel(2.5)),
+                    axis.title=element_text(size=rel(2.5)),
+                    plot.title = element_text(face="bold", size=rel(2.5), hjust = 0.5),
                     legend.text = element_text(size=rel(1.15)),
                     legend.position = 'none')
 
@@ -574,25 +567,21 @@ plot_nclus
 
 ## Analysis of the best partition
 
-```{r}
-label = TRUE
-ob6 = plot_clustering(partitions, coord, "VI" ,M, a, ts_read, state_params, label = label)
+```{r fig.height=6, fig.width=9}
+source("utils/plot_clustering.R")
+ob6 = plot_clustering(partitions, coord, "VI" ,M, a, ts_read, state_params)
 ob6
 # to plot in the console):
 # x11();ob6$plot
 ```
 
 ```{r,include=FALSE}
-#save
-if(label)
-{
-  nome = paste("map_M_", M, "_a_",a,"_label",sep="")
-  save_svg_plot(ob6$plot,name=nome, folder="output_plot/", type="ggplot",width = 15, height = 15)
-}else if (!label)
-{
-  nome = paste("map_M_", M, "_a_",a,sep="")
-  save_svg_plot(ob6$plot,name=nome, folder="output_plot/", type="ggplot",width = 10, height = 10)
-}
+# save plots
+nome = paste("map_M_", M, "_a_",a,"_label",sep="")
+save_svg_plot(ob6$plot_label,name=nome, folder="output_plot/", type="ggplot",width = 15, height = 15)
+
+nome = paste("map_M_", M, "_a_",a,sep="")
+save_svg_plot(ob6$plot,name=nome, folder="output_plot/", type="ggplot",width = 7.5, height = 7.5)
 
 nome = paste("ts_output_", M, "_a_",a,sep="")
 save_svg_plot(ob6$matplot, name=nome, folder = "output_plot/")
@@ -602,9 +591,17 @@ save_svg_plot(ob6$psm, name=nome, folder = "output_plot/")
 ```
 
 
+
 ```{r}
-ob6$posterior_unique_vals
+unique_val = data.frame(value = ob6$posterior_unique_vals,
+                        cluster_id = unique(ob6$best_clus))
+unique_val
 ```
+
+
+
+
+
 
 
 
