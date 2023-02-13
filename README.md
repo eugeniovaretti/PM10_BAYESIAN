@@ -50,7 +50,7 @@ cd ..
 Tutor: Matteo Gianella (@TeoGiane)
 
 - Carnevali Davide 
-- Gurrieri Davide (@davide-gurrieri)
+- Gurrieri Davide ( @davide-gurrieri )
 - Moroni Sofia (@SofiaMoroni9)
 - Rescalli Sara 
 - Varetti Eugenio (@eugeniovaretti)
