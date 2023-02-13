@@ -1,7 +1,7 @@
 #! This function takes a matrix B * N (B=num_iter, N=num_items) (or a list) and a dataframe of coordinates (N * 2), with colnames ("lat","lon").
 #! The output is a plot of the graph, with the best clustering and optimal number of clusters under different loss function (select them).
 
-plot_clustering <- function(data, coord, loss, M = NULL, a = NULL, dataset_plot, unique_vals_chain = NULL)
+plot_clustering <- function(data, coord, loss, M = NULL, a = NULL, dataset_plot, unique_vals_chain = NULL, label=FALSE)
 {
   
   library(salso)
@@ -42,7 +42,10 @@ plot_clustering <- function(data, coord, loss, M = NULL, a = NULL, dataset_plot,
     geom_point(data=coord, aes(lon,lat), color=as.numeric(best_clus$estimate), size=3, alpha=0.8) +
     ggtitle(paste("Loss: ",toupper(loss), " -- N_clust =", best_clus$nClusters, " -- M =", M, " -- a =", a, sep=" "))
   
-  
+  if(label){
+    plot = plot + geom_text(data = coord, aes(x = lon, y = lat, label = loc), hjust = 0, vjust = 0)
+  }
+ 
   (matplot <- matplot(t(dataset_plot), type="l", lty=1, col=as.numeric(best_clus$estimate), main = paste("Optimal clustering under", toupper(loss), sep=" "), xlab = "weeks", ylab = "PM10"))
   matplot_g <- recordPlot()
   dev.off()
