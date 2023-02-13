@@ -11,7 +11,7 @@ touch bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb
 printf "fixed_value {\n  totalmass: "$M"\n  a: "$a"\n}" > bayesmix/examples/ar1nig_hierarchy/in/dp.asciipb
 
 touch used_parameters.txt
-printf ""$M"\n"$a"" > used_parameters.txt
+printf ""$M"\n"$a"\n" > used_parameters.txt
 
 echo "run the c++ algorithm"
 echo
