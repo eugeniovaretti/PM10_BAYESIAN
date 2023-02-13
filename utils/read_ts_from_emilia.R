@@ -5,14 +5,14 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   PM10_Emilia = read.csv(data_name)
   PM10_Emilia = na.omit(PM10_Emilia)
   
-  # divido i dati per località, selezionando un anno in particolare
-  località = unique(PM10_Emilia[,"NomeStazione"])
-  p = length(località)
+  # divido i dati per localita, selezionando un anno in particolare
+  localita = unique(PM10_Emilia[,"NomeStazione"])
+  p = length(localita)
   data = PM10_Emilia[which(PM10_Emilia[,"Anno"]== anno),]
   data_split = vector(mode = "list", length = p)
   for(i in 1:p)
   {
-    data_split[[i]] = data[which(data[,"NomeStazione"]==località[i]), ]
+    data_split[[i]] = data[which(data[,"NomeStazione"]==localita[i]), ]
   }
   # import info about year
 
@@ -23,9 +23,9 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   colnames(dati_anni)=c("numero", "giorno","settimana","anno")
   dati_anno = dati_anni[which(dati_anni$anno==anno),]
   
-  # costruisco una matrice 365 x numero_località in cui inserisco i valori di una variabile a piacimento (misurazioni PM10), aggiungo gli opportuni Na
+  # costruisco una matrice 365 x numero_localita in cui inserisco i valori di una variabile a piacimento (misurazioni PM10), aggiungo gli opportuni Na
   dati_completi = matrix(NA, nrow = n_giorni, ncol = p)
-  colnames(dati_completi) = località
+  colnames(dati_completi) = localita
   
   variabile = "Valore"
   
@@ -45,7 +45,7 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   
   # faccio la media nelle settimane
   dati_completi_set = matrix(NA, nrow = 52, ncol = p)
-  colnames(dati_completi_set) = località
+  colnames(dati_completi_set) = localita
   
   for(i in 1:p)
   {
@@ -75,16 +75,16 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
   indici = indici[-index]
   dati_completi_set = dati_completi_set[,indici]
   p = ncol(dati_completi_set)
-  località = località[indici]
+  localita = localita[indici]
   
   # creo delle label relative all'area per visualizzare le ts
-  area_località = rep("",length(indici))
-  tipo_località = rep("",length(indici))
+  area_localita = rep("",length(indici))
+  tipo_localita = rep("",length(indici))
   j=1
   for (i in indici)
   {
-    area_località[j] = unique(data_split[[i]][,"Area"])
-    tipo_località[j] = unique(data_split[[i]][,"Tipo"])
+    area_localita[j] = unique(data_split[[i]][,"Area"])
+    tipo_localita[j] = unique(data_split[[i]][,"Tipo"])
     j=j+1
   }
   
@@ -94,9 +94,9 @@ read_ts_from_emilia = function(anno = "2018", data_name = "input_data/PM10_Emili
     ts_no_mean[,i] = dati_completi_set[,i] - medie[i]
   }
   
-  list(località = località,
-       area_località = area_località,
-       tipo_località = tipo_località,
+  list(localita = localita,
+       area_localita = area_localita,
+       tipo_localita = tipo_localita,
        time_series_sett = dati_completi_set,
        time_series_sett_no_mean = ts_no_mean)
   

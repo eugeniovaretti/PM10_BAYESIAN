@@ -3,20 +3,20 @@ read_ts_from_lombardia = function(data_name = "input_data/ImposedDB_complete.csv
   data <- read.csv(data_name)
   
   # split data based on locations
-  località = unique(data$NomeStazione)
-  p = length(località)
+  localita = unique(data$NomeStazione)
+  p = length(localita)
   library(dplyr)
   
   data_split = vector(mode = "list", length = p)
   for(i in 1:p)
   {
-    data_split[[i]] = data[which(data$NomeStazione ==località[i]), ]
+    data_split[[i]] = data[which(data$NomeStazione ==localita[i]), ]
     data_split[[i]] <- data_split[[i]] %>% arrange(Data)
   }
   
   # build a matrix 
   data_matrix = matrix(NA, nrow = 365, ncol = p)
-  colnames(data_matrix) = località
+  colnames(data_matrix) = localita
   
   variabile = "Valore"
   
@@ -30,7 +30,7 @@ read_ts_from_lombardia = function(data_name = "input_data/ImposedDB_complete.csv
   
   # mean by weeks
   data_matrix_set = matrix(NA, nrow = 52, ncol = p)
-  colnames(data_matrix_set) = località
+  colnames(data_matrix_set) = localita
   
   for(i in 1:p)
   {
@@ -44,30 +44,30 @@ read_ts_from_lombardia = function(data_name = "input_data/ImposedDB_complete.csv
   }
   
   # labels related to locations
-  area_località = rep("",p)
-  tipo_località = rep("",p)
+  area_localita = rep("",p)
+  tipo_localita = rep("",p)
   for (i in 1:p)
   {
-    area_località[i] = unique(data_split[[i]][,"Area"])
-    if(area_località[i]=="U"){
-      area_località[i]="Urbano"
-    } else if(area_località[i]=="R"){
-      area_località[i]="Rurale"
-    } else if(area_località[i]=="S"){
-      area_località[i]="Suburbano"
+    area_localita[i] = unique(data_split[[i]][,"Area"])
+    if(area_localita[i]=="U"){
+      area_localita[i]="Urbano"
+    } else if(area_localita[i]=="R"){
+      area_localita[i]="Rurale"
+    } else if(area_localita[i]=="S"){
+      area_localita[i]="Suburbano"
     }
-    tipo_località[i] = unique(data_split[[i]][,"Tipo"])
-    if(tipo_località[i]=="B"){
-      tipo_località[i]="Fondo"
-    } else if(tipo_località[i]=="T"){
-      tipo_località[i]="Traffico"
-    } else if(tipo_località[i]=="I"){
-      tipo_località[i]="Industriale"
+    tipo_localita[i] = unique(data_split[[i]][,"Tipo"])
+    if(tipo_localita[i]=="B"){
+      tipo_localita[i]="Fondo"
+    } else if(tipo_localita[i]=="T"){
+      tipo_localita[i]="Traffico"
+    } else if(tipo_localita[i]=="I"){
+      tipo_localita[i]="Industriale"
     }
   }
   
-  list(località = località,
-       area_località = area_località,
-       tipo_località = tipo_località,
+  list(localita = localita,
+       area_localita = area_localita,
+       tipo_localita = tipo_localita,
        time_series_sett = data_matrix_set)
 }
