@@ -49,12 +49,12 @@ cd ..
 # Reproducibility  
 This section is intended for any user who wants to run the analysis to reproduce the same results, or for any user who wants to analyze results with different hyperparameter values (in particular, the code is optimized and automated to test grids of totalmass (`totalmass`) and distance (`a`) values), or for those who want to apply the same model to their own data.  
 The repository is structured as follow:
-- `bayesmix` : contains the submodule that performs the MCMC simulations  
-- `input_data` : contains all the input data (time series and covariates for the model)
-- `output_plot` : empty folder useful to collect results when the `main.Rmd` and the algorithm are runned
-- `python_implementation` : contains the vanilla python implementation of the model. It is useful to better (and easily) understand the algorithm and the model implementation. In addition, it is useful for comparing performances of the same algorithm implemented in C++ (much faster).
-- `utils` : contains the utilities developed for the main script
-- `main.Rmd` : contains the code to prepare data for the mcmc algorithm and interpret the output. Run the script up to the "mcmc algorithm" section and then follow the instructions to run the c++ code (see `run.sh`). Finally run the "results" section to interpret the results.
+- `bayesmix` : contains the submodule that performs the MCMC simulations.  
+- `input_data` : contains all the input data (time series and covariates for the model).  
+- `output_plot` : empty folder useful to collect results when the `main.Rmd` and the algorithm are runned.  
+- `python_implementation` : contains the vanilla python implementation of the model. It is useful to better (and more easily) understand the algorithm and the model implementation. In addition, it is useful for comparing the performance of the same algorithm implemented in C++ (much faster).  
+- `utils` : contains the utilities developed for the main script.
+- `main.Rmd` : notebook that serves as a comprehensive guide for preparing data and interpreting the output from the MCMC algorithm. The script guides you through the process of data preparation, up to the _MCMC Algorithm_ section, where you are prompted to run the C++ code using the `run.sh` file. The final _Result_ section guides you through the interpretation of the results, ensuring a seamless and effective analysis.
 - `run.sh` : bash script to facilitate the execution of the c++ algorithm. It uses the files produced by the first sections of `main.Rmd`. One can specify the two parameters `a` and `M` as arguments. The default values are `a=250` and `M=0.567`.
 
 # Authors  
