@@ -18,6 +18,9 @@ save_svg_plot = function(plot, name="test", folder="", type="normal", width = 9,
     dev.off()
   } else if(type == "ggplot")
   {
-    ggsave(nome_finale, plot, width = width, height = height)
+    #ggsave(nome_finale, plot, width = width, height = height)
+    svg(nome_finale, width = width, height = height)
+    print(plot)
+    dev.off()
   }
 }
