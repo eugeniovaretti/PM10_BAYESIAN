@@ -1,6 +1,6 @@
 
-niter=10
-nburn=0
+niter=240
+nburn=40
 a=2
 
 for M in 0.567
